@@ -1,6 +1,6 @@
 ## zodern:fix-async-stubs
 
-A year ago Meteor added support for async Method stubs. They have some [limitations](https://guide.meteor.com/2.8-migration.html#the-limitations). Specifically, while an async stub is running, other code can not:
+A year ago Meteor added support for [async Method stubs](https://guide.meteor.com/2.8-migration.html#callasync). With the current implementation there are some limitations. Specifically, while an async stub is running, other code can not:
 
 - call a method
 - do a client side mutation with the [allow-deny package](https://docs.meteor.com/api/collections#Mongo-Collection-allow)
@@ -8,7 +8,7 @@ A year ago Meteor added support for async Method stubs. They have some [limitati
 
 This is because Meteor creates a simulation when running a stub. This simulation is global - any code that runs is inside this simulation. With sync stubs, this was fine - no other code could run during a simulation. However, with async stubs it is much more difficult to ensure other code does not run, even if you carefully await each method.
 
-This package modifies how stubs work to remove this implementation. Add this package with:
+This package modifies how stubs work to remove this limitation. Add this package with:
 ```
 meteor add zodern:fix-async-stubs
 ```
@@ -30,7 +30,7 @@ Using these api's could allow other code to run before the async stub finishes.
 
 If one of these api's are used, a warning will be shown in the console:
 ```
-Method stub (${name}) took too long and could cause unexpected problems
+Method stub (<method name>) took too long and could cause unexpected problems. Learn more at https://github.com/zodern/fix-async-stubs/#limitations
 ```
 
 ### How it works
