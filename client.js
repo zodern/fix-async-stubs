@@ -11,8 +11,8 @@ function queueFunction(fn) {
   let promise = new Promise((_resolve, _reject) => {
     resolve = _resolve;
     reject = _reject;
-    
   });
+
   queue = queue.finally(() => {
     fn(resolve, reject);
     return promise;
@@ -38,7 +38,7 @@ Meteor.connection._readyToMigrate = function () {
 }
 
 
-let currentMethodInvocation = null;;
+let currentMethodInvocation = null;
 
 /**
  * Meteor sets CurrentMethodInvocation to undefined for the reasons explained at
@@ -60,21 +60,16 @@ Meteor.connection.callAsync = function () {
 let oldApplyAsync = Meteor.connection.applyAsync;
 Meteor.connection.applyAsync = function () {
   let args = arguments;
+  let name = args[0];
 
   if (currentMethodInvocation) {
     DDP._CurrentMethodInvocation._set(currentMethodInvocation);
     currentMethodInvocation = null;
   }
 
-  // code outside of the stub shouldn't be able to create a then callback
-  // while the stub is running
-  // 
-
   const enclosing = DDP._CurrentMethodInvocation.get();
   const alreadyInSimulation = enclosing?.isSimulation;
   const isFromCallAsync = enclosing?._isFromCallAsync;
-
-  let name = args[0];
 
   if (Meteor.connection._getIsSimulation({
     isFromCallAsync, alreadyInSimulation
@@ -115,13 +110,13 @@ Meteor.connection.apply = function () {
   // so we have to queue sending the message to the server until any previous async
   // methods run.
   // This does mean the stubs run in a different order than the methods on the
-  // server
+  // server.
   // TODO: can we queue Meteor.apply in some situations instead of running
   // immediately?
 
   let oldOutstandingMethodBlocks = Meteor.connection._outstandingMethodBlocks;
-  // Meteor only sends the method if _outstandingMethodBlocks.length is 1
-  // Add a wait block to force Meteor to  put the new method in a second object.
+  // Meteor only sends the method if _outstandingMethodBlocks.length is 1.
+  // Add a wait block to force Meteor to put the new method in a second block.
   let outstandingMethodBlocks = [{ wait: true, methods: [] }];
   Meteor.connection._outstandingMethodBlocks = outstandingMethodBlocks;
 
@@ -168,9 +163,9 @@ function queueMethodInvoker(methodInvoker, wait) {
 
       // If we added it to the first block, send it out now.
       if (self._outstandingMethodBlocks.length === 1) methodInvoker.sendMessage();
-
-      resolve();
     }
+
+    resolve();
   });
 }
 
