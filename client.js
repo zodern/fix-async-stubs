@@ -97,7 +97,7 @@ Meteor.connection.applyAsync = function () {
 
     Meteor._setImmediate(() => {
       if (!finished) {
-        console.warn(`Method stub (${name}) took too long and could cause unexpected problems`);
+        console.warn(`Method stub (${name}) took too long and could cause unexpected problems. Learn more at https://github.com/zodern/fix-async-stubs/#limitations`);
       }
     });
   });

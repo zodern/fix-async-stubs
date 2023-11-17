@@ -2,7 +2,7 @@ Package.describe({
   name: 'zodern:fix-async-stubs',
   version: '1.0.0',
   summary: 'Fixes issues with async method stubs',
-  git: '',
+  git: 'https://github.com/zodern/fix-async-stubs.git',
   documentation: 'README.md'
 });
 
