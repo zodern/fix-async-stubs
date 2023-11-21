@@ -2,17 +2,17 @@ import { Tinytest } from "meteor/tinytest";
 
 let events = [];
 Meteor.methods({
-  'sync-stub' () {
+  'sync-stub'() {
     events.push('sync-stub');
     return 'sync-stub-result'
   },
-  async 'async-stub' () {
+  async 'async-stub'() {
     events.push('start async-stub');
     await 0;
     events.push('end async-stub');
     return 'async-stub-result'
   },
-  callAsyncFromSyncStub () {
+  callAsyncFromSyncStub() {
     events.push('callAsyncFromSyncStub');
     Meteor.callAsync('async-stub');
   },
@@ -39,7 +39,7 @@ Tinytest.addAsync('applyAsync - server only', async function (test) {
     serverResolver = resolve;
   });
 
-  let stubResult = await Meteor.applyAsync('server-only-sync', [], { returnStubValue: true}, (err, result) => {
+  let stubResult = await Meteor.applyAsync('server-only-sync', [], { returnStubValue: true }, (err, result) => {
     console.log(err);
     if (!err) {
       serverResolver(result);
@@ -116,7 +116,7 @@ Tinytest.addAsync('applyAsync - callAsync from async stub', async function (test
 
 Tinytest.addAsync('applyAsync - callAsync in then', async function (test) {
   await Meteor.callAsync('getAndResetEvents');
-  
+
   events = [];
   let result = await Meteor.callAsync('async-stub').then(() => Meteor.callAsync('async-stub'));
   let serverEvents = await Meteor.callAsync('getAndResetEvents');
@@ -189,7 +189,7 @@ Tinytest.addAsync('apply - proper order with applyAsync', async function (test) 
     serverResult,
     result1,
     result2
-   ] = await Promise.all([serverPromise, promise1, promise2]);
+  ] = await Promise.all([serverPromise, promise1, promise2]);
 
   let serverEvents = await Meteor.callAsync('getAndResetEvents');
 
@@ -199,4 +199,28 @@ Tinytest.addAsync('apply - proper order with applyAsync', async function (test) 
   test.equal(result2, 'sync-result');
   test.equal(events, ['callSyncStubFromSyncStub', 'sync-stub', 'start callSyncStubFromAsyncStub', 'sync-stub', 'end callSyncStubFromAsyncStub']);
   test.equal(serverEvents, ['callSyncStubFromAsyncStub', 'callSyncStubFromSyncStub', 'server-only-sync']);
+});
+
+Tinytest.addAsync('apply - wait', async function (test) {
+  await Meteor.callAsync('getAndResetEvents');
+  events = [];
+  let serverResolver;
+  let serverPromise = new Promise((resolve) => {
+    serverResolver = resolve;
+  });
+
+  let stubResult = Meteor.apply(
+    'callSyncStubFromSyncStub',
+    [],
+    { returnStubValue: true, wait: true },
+    (err, result) => {
+      if (!err) {
+        serverResolver(result);
+      }
+    });
+
+  const serverResult = await serverPromise;
+
+  test.equal(stubResult, 'sync-stub-result');
+  test.equal(serverResult, 'server result');
 });

@@ -160,10 +160,10 @@ function queueMethodInvoker(methodInvoker, wait) {
       }
 
       last(self._outstandingMethodBlocks).methods.push(methodInvoker);
-
-      // If we added it to the first block, send it out now.
-      if (self._outstandingMethodBlocks.length === 1) methodInvoker.sendMessage();
     }
+    
+    // If we added it to the first block, send it out now.
+    if (self._outstandingMethodBlocks.length === 1) methodInvoker.sendMessage();
 
     resolve();
   });
