@@ -224,3 +224,31 @@ Tinytest.addAsync('apply - wait', async function (test) {
   test.equal(stubResult, 'sync-stub-result');
   test.equal(serverResult, 'server result');
 });
+
+Tinytest.addAsync('apply - preserve order with subscriptions', async function (test) {
+  await Meteor.callAsync('getAndResetEvents');
+  let serverResolver;
+  let serverPromise = new Promise((resolve) => {
+    serverResolver = resolve;
+  });
+  let subResolver;
+  let subPromise = new Promise((resolve) => {
+    subResolver = resolve;
+  });
+
+  Meteor.call('server-only-sync', (err, result) => {
+    if (!err) {
+      serverResolver(result);
+    }
+  });
+
+  let handle = Meteor.subscribe('simple-publication', () => subResolver());
+
+  await serverPromise;
+  await subPromise;
+  handle.stop();
+
+  let serverEvents = await Meteor.callAsync('getAndResetEvents');
+
+  test.equal(serverEvents, ['server-only-sync', 'publication']);
+});

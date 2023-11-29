@@ -1,5 +1,10 @@
 let events = [];
 
+Meteor.publish('simple-publication', function () {
+  events.push('publication');
+  this.ready();
+});
+
 Meteor.methods({
   getAndResetEvents() {
     let oldEvents = events;

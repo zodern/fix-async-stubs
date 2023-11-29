@@ -161,7 +161,7 @@ function queueMethodInvoker(methodInvoker, wait) {
 
       last(self._outstandingMethodBlocks).methods.push(methodInvoker);
     }
-    
+
     // If we added it to the first block, send it out now.
     if (self._outstandingMethodBlocks.length === 1) methodInvoker.sendMessage();
 
@@ -169,11 +169,39 @@ function queueMethodInvoker(methodInvoker, wait) {
   });
 }
 
+let queueSend = false;
+let oldSubscribe = Meteor.connection.subscribe;
+Meteor.connection.subscribe = function () {
+  queueSend = true;
+  try {
+    return oldSubscribe.apply(this, arguments);
+  } finally {
+    queueSend = false;
+  }
+};
+
+let oldSend = Meteor.connection._send;
+Meteor.connection._send = function () {
+  if (!queueSend) {
+    return oldSend.apply(this, arguments);
+  }
+
+  queueSend = false;
+  queueFunction((resolve) => {
+    try {
+      oldSend.apply(this, arguments);
+    } finally {
+      resolve();
+    }
+  });
+};
+
 // Re-create these proxied functions to use our wrapper
 [
   'callAsync',
   'apply',
   'applyAsync',
+  'subscribe'
 ].forEach(name => {
   Meteor[name] = Meteor.connection[name].bind(Meteor.connection);
 });
