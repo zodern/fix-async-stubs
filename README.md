@@ -1,5 +1,7 @@
 ## zodern:fix-async-stubs
 
+> This package is only needed for Meteor 2. The package's code has been integrated into Meteor 3.
+
 A year ago Meteor added support for [async Method stubs](https://guide.meteor.com/2.8-migration.html#callasync). With the current implementation there are some limitations. Specifically, while an async stub is running, other code can not:
 
 - call a method
@@ -16,6 +18,8 @@ meteor add zodern:fix-async-stubs
 Then use async stubs without worry. Call them or use any other Meteor api whenever you want, and it will work.
 
 ### Limitations
+
+> Please note: this limitation already exists without this package. However, it is more important when using this package since it allows us to remove all other limitions.
 
 There is no perfect solution to the problems with async stubs.
 
